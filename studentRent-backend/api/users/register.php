@@ -14,7 +14,7 @@ $db = $database->connect();
 // Capture raw POST data from the frontend
 $data = json_decode(file_get_contents("php://input"));
 
-// Validate incoming data payload (Matching your Thunder Client JSON)
+// Validate incoming data payload
 if (!isset($data->name) || !isset($data->email) || !isset($data->password) || !isset($data->role)) {
     http_response_code(400);
     echo json_encode(['message' => 'Missing required fields.']);
@@ -32,8 +32,9 @@ function generateUuid() {
 
 $user_id = generateUuid();
 $email = htmlspecialchars(strip_tags($data->email));
+$role = htmlspecialchars(strip_tags($data->role));
 
-// Query to check if the email already exists (Updated to user_id)
+// Query to check if the email already exists
 $check_query = "SELECT user_id FROM users WHERE email = :email LIMIT 1";
 $check_stmt = $db->prepare($check_query);
 $check_stmt->bindParam(':email', $email);
@@ -51,25 +52,45 @@ $hashed_password = password_hash($data->password, PASSWORD_DEFAULT);
 // Generate the creation timestamp explicitly in a 24-hour format
 $created_at = date('Y-m-d H:i:s');
 
-// The parameterized INSERT query (Aligned with your schema and payload)
-$query = "INSERT INTO users (user_id, name, email, password_hash, role, created_at) 
-          VALUES (:user_id, :name, :email, :password_hash, :role, :created_at)";
+try {
+    // Start a transaction: Do not save permanently until ALL queries succeed
+    $db->beginTransaction();
 
-$stmt = $db->prepare($query);
+    // --- 1. INSERT INTO USERS TABLE ---
+    $query = "INSERT INTO users (user_id, name, email, password_hash, role, created_at) 
+              VALUES (:user_id, :name, :email, :password_hash, :role, :created_at)";
 
-// Clean user input and bind the values directly
-$stmt->bindValue(':user_id', $user_id);
-$stmt->bindValue(':name', htmlspecialchars(strip_tags($data->name)));
-$stmt->bindValue(':email', $email);
-$stmt->bindValue(':password_hash', $hashed_password);
-$stmt->bindValue(':role', htmlspecialchars(strip_tags($data->role)));
-$stmt->bindValue(':created_at', $created_at);
+    $stmt = $db->prepare($query);
+    $stmt->bindValue(':user_id', $user_id);
+    $stmt->bindValue(':name', htmlspecialchars(strip_tags($data->name)));
+    $stmt->bindValue(':email', $email);
+    $stmt->bindValue(':password_hash', $hashed_password);
+    $stmt->bindValue(':role', $role);
+    $stmt->bindValue(':created_at', $created_at);
+    
+    // Execute first query
+    $stmt->execute();
 
-// Execute the final query
-if ($stmt->execute()) {
+    // --- 2. CONDITIONALLY INSERT INTO LANDLORD_PROFILES ---
+    if ($role === 'landlord') {
+        $landlord_query = "INSERT INTO landlord_profiles (landlord_id) VALUES (:landlord_id)";
+        $landlord_stmt = $db->prepare($landlord_query);
+        $landlord_stmt->bindValue(':landlord_id', $user_id);
+        
+        // Execute second query
+        $landlord_stmt->execute();
+    }
+
+    // Both queries succeeded, commit the changes to the database
+    $db->commit();
+
     http_response_code(201); // Created
     echo json_encode(['message' => 'User registered successfully.']);
-} else {
+
+} catch (Exception $e) {
+    // An error occurred, roll back any changes made during the transaction
+    $db->rollBack();
+    
     http_response_code(500); // Internal Server Error
     echo json_encode(['message' => 'User registration failed.']);
 }
