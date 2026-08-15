@@ -40,7 +40,7 @@ export default function Home() {
     }
 
     // Fetch listings
-    fetch('[http://studentrent.infinityfree.io/api/users/login.php](http://studentrent.infinityfree.io/api/users/login.php)'
+    fetch('http://studentrent.infinityfree.io/api/properties/read.php')
       .then((res) => res.json())
       .then((data) => {
         if (data.data) {
@@ -193,7 +193,7 @@ export default function Home() {
                   <div className="relative h-48 w-full bg-gray-800">
                     <img 
                       src={prop.image_url 
-                        ? `[http://studentrent.infinityfree.io](http://studentrent.infinityfree.io)/${prop.image_url}` 
+                        ? `http://studentrent.infinityfree.io/${prop.image_url}` 
                         : 'https://placehold.co/600x400/252525/A3A3A3?text=No+Image'} 
                       alt={prop.title}
                       className="h-full w-full object-cover opacity-90 transition-opacity hover:opacity-100"

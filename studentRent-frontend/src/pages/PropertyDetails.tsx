@@ -26,7 +26,7 @@ export default function PropertyDetails() {
     setIsAuthenticated(!!token);
 
     // Fetch properties
-    fetch('[http://studentrent.infinityfree.io/api/users/login.php](http://studentrent.infinityfree.io/api/users/login.php)'
+    fetch('http://studentrent.infinityfree.io/api/properties/read.php')
       .then((res) => res.json())
       .then((data) => {
         if (data.data) {
@@ -91,7 +91,7 @@ export default function PropertyDetails() {
         <div className="mb-8 aspect-video w-full overflow-hidden rounded-std bg-gray-800 shadow-clean">
           <img 
             src={property.image_url 
-              ? `[http://studentrent.infinityfree.io](http://studentrent.infinityfree.io)/${property.image_url}` 
+              ? `http://studentrent.infinityfree.io/${property.image_url}` 
               : 'https://placehold.co/1200x600/252525/A3A3A3?text=No+Image+Available'} 
             alt={property.title}
             className="h-full w-full object-cover"
