@@ -3,8 +3,14 @@
 // Note: We allow GET methods here, not POST
 header('Access-Control-Allow-Origin: *');
 header('Content-Type: application/json');
-header('Access-Control-Allow-Methods: GET'); 
+header('Access-Control-Allow-Methods: GET, OPTIONS'); 
 header('Access-Control-Allow-Headers: Access-Control-Allow-Headers, Content-Type, Access-Control-Allow-Methods, Authorization, X-Requested-With');
+header("Access-Control-Max-Age: 3600");
+
+if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+    http_response_code(200);
+    exit();
+}
 
 include_once '../../config/Database.php';
 
@@ -14,6 +20,7 @@ $db = $database->connect();
 
 // Create the query
 // We only want to show properties that are marked as visible, and we'll sort them by newest first
+// FIXED: Added image_url to the SELECT statement
 $query = "SELECT 
             property_id, 
             landlord_id, 
@@ -23,7 +30,8 @@ $query = "SELECT
             location, 
             distance_to_campus_km, 
             room_type, 
-            amenities, 
+            amenities,
+            image_url, 
             created_at 
           FROM properties 
           WHERE is_visible = 1 
@@ -54,6 +62,7 @@ if ($row_count > 0) {
             'distance_to_campus_km' => $distance_to_campus_km,
             'room_type' => $room_type,
             'amenities' => $amenities,
+            'image_url' => $image_url, // FIXED: Now sending the image path back to React!
             'created_at' => $created_at
         ];
 
