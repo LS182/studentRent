@@ -1,10 +1,10 @@
 <?php
 class Database {
     // Database credentials
-    private $host = '127.0.0.1';
-    private $db_name = 'student_accommodation_db';
-    private $username = 'student_admin'; 
-    private $password = 'securepassword123'; // The one you just set in Workbench
+    private $host = 'sql308.infinityfree.com';
+    private $db_name = 'if0_42662608_studentRent';
+    private $username = 'if0_42662608';
+    private $password = 'LS180405'; 
     private $conn;
 
     // Secure DB Connection
