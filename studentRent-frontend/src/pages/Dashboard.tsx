@@ -43,7 +43,7 @@ export default function Dashboard() {
 
   const fetchListings = () => {
     setIsFetchingListings(true);
-    fetch('http://studentrent.infinityfree.io/api/properties/read.php')
+    fetch('https://studentrent.infinityfree.io/api/properties/read.php')
       .then(res => res.json())
       .then(data => {
         if (data.data) setMyProperties(data.data);
