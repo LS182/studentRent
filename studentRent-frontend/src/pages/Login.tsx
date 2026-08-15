@@ -12,7 +12,7 @@ export default function Login() {
     setError('');
 
     try {
-      const response = await fetch('http://localhost:8000/api/users/login.php', {
+      const response = await fetch('[http://studentrent.infinityfree.io](http://studentrent.infinityfree.io)/api/users/login.php', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password }),

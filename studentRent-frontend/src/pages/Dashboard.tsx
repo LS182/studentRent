@@ -43,7 +43,7 @@ export default function Dashboard() {
 
   const fetchListings = () => {
     setIsFetchingListings(true);
-    fetch('http://localhost:8000/api/properties/read.php')
+    fetch('[http://studentrent.infinityfree.io](http://studentrent.infinityfree.io)/api/properties/read.php')
       .then(res => res.json())
       .then(data => {
         if (data.data) setMyProperties(data.data);
@@ -84,7 +84,7 @@ export default function Dashboard() {
 
     try {
       // STEP 1: Create the property record via JSON
-      const createResponse = await fetch('http://localhost:8000/api/properties/create.php', {
+      const createResponse = await fetch('[http://studentrent.infinityfree.io](http://studentrent.infinityfree.io)/api/properties/create.php', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -111,7 +111,7 @@ export default function Dashboard() {
         formData.append('image', image);
         formData.append('property_id', createData.property_id);
 
-        const uploadResponse = await fetch('http://localhost:8000/api/properties/upload_image.php', {
+        const uploadResponse = await fetch('[http://studentrent.infinityfree.io](http://studentrent.infinityfree.io)/api/properties/upload_image.php', {
           method: 'POST',
           headers: {
             'Authorization': `Bearer ${token}`
@@ -147,7 +147,7 @@ export default function Dashboard() {
     
     const token = localStorage.getItem('token');
     try {
-      const response = await fetch('http://localhost:8000/api/properties/delete.php', {
+      const response = await fetch('[http://studentrent.infinityfree.io](http://studentrent.infinityfree.io)/api/properties/delete.php', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

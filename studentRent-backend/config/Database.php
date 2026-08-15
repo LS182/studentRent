@@ -4,7 +4,7 @@ class Database {
     private $host = 'sql308.infinityfree.com';
     private $db_name = 'if0_42662608_studentRent';
     private $username = 'if0_42662608';
-    private $password = 'LS180405'; 
+    private $password = 'LS180405'; // The one you just set in Workbench
     private $conn;
 
     // Secure DB Connection

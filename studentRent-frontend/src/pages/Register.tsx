@@ -29,7 +29,7 @@ export default function Register() {
     setIsLoading(true);
 
     try {
-      const response = await fetch('http://localhost:8000/api/users/register.php', {
+      const response = await fetch('[http://studentrent.infinityfree.io](http://studentrent.infinityfree.io)/api/users/register.php', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name, email, password, role }),
