@@ -1,91 +1,92 @@
-import { useState } from 'react';
+import { useState, type FormEvent } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { apiUrl } from '../lib/api';
 
 export default function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
 
-  const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleLogin = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
     setError('');
+    setIsLoading(true);
 
     try {
-      const response = await fetch('https://studentrent.infinityfree.io/api/users/login.php', {
+      const response = await fetch(apiUrl('/api/users/login.php'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password }),
       });
-
       const data = await response.json();
 
       if (response.ok && data.token) {
-        // Save the token and redirect to home
         localStorage.setItem('token', data.token);
         navigate('/');
       } else {
         setError(data.message || 'Login failed.');
       }
-    } catch (err) {
-      setError('Server error. Please try again later.');
+    } catch {
+      setError('We could not reach StudentRent. Please try again shortly.');
+    } finally {
+      setIsLoading(false);
     }
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-charcoal text-white">
-      <div className="w-full max-w-md rounded-std border border-gray-800 bg-charcoal-card p-8 shadow-clean">
-        <div className="mb-8 text-center">
-          <h1 className="text-2xl font-bold tracking-tight">
-            Student<span className="text-forest-green-light">Rent</span>
-          </h1>
-          <p className="mt-2 text-sm text-charcoal-muted">Find your place to call home.</p>
+    <section className="auth-page">
+      <div className="auth-visual">
+        <div className="auth-visual-content">
+          <div className="eyebrow"><span className="eyebrow-line" />Welcome to StudentRent</div>
+          <h1>Good to have you home.</h1>
+          <p>Sign in to continue exploring student accommodation and manage your property listings.</p>
+        </div>
+      </div>
+      <div className="auth-card">
+        <div className="auth-card-header">
+          <div className="eyebrow eyebrow-dark"><span className="eyebrow-line" />Your account</div>
+          <h2>Welcome back</h2>
+          <p>Enter your details to sign in to StudentRent.</p>
         </div>
 
-        {error && (
-          <div className="mb-6 rounded-std border border-red-900/50 bg-red-950/30 p-3 text-sm text-red-400">
-            {error}
-          </div>
-        )}
+        {error && <div className="form-error" role="alert">{error}</div>}
 
-        <form onSubmit={handleLogin} className="space-y-4">
-          <div>
-            <label className="mb-1 block text-sm font-medium text-gray-200">Email</label>
+        <form onSubmit={handleLogin} className="form-stack">
+          <div className="form-field">
+            <label htmlFor="login-email">Email address</label>
             <input
+              id="login-email"
+              className="form-control"
               type="email"
+              autoComplete="email"
               required
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="w-full rounded-std border border-gray-700 bg-charcoal px-4 py-2.5 outline-none focus:border-forest-green-light"
+              onChange={(event) => setEmail(event.target.value)}
+              placeholder="you@example.com"
             />
           </div>
-
-          <div>
-            <label className="mb-1 block text-sm font-medium text-gray-200">Password</label>
+          <div className="form-field">
+            <label htmlFor="login-password">Password</label>
             <input
+              id="login-password"
+              className="form-control"
               type="password"
+              autoComplete="current-password"
               required
               value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="w-full rounded-std border border-gray-700 bg-charcoal px-4 py-2.5 outline-none focus:border-forest-green-light"
+              onChange={(event) => setPassword(event.target.value)}
+              placeholder="Enter your password"
             />
           </div>
-
-          <button
-            type="submit"
-            className="mt-2 w-full rounded-std bg-icy-blue-dark py-3 font-medium text-white transition-colors hover:bg-forest-green"
-          >
-            Sign In
+          <button className="button button-primary button-block" type="submit" disabled={isLoading}>
+            {isLoading ? 'Signing in...' : 'Sign in'}
           </button>
         </form>
 
-        <p className="mt-6 text-center text-sm text-charcoal-muted">
-          Don't have an account?{' '}
-          <Link to="/register" className="text-forest-green-light hover:underline">
-            Create an account
-          </Link>
-        </p>
+        <p className="auth-switch">New to StudentRent? <Link className="text-link" to="/register">Create an account</Link></p>
       </div>
-    </div>
+    </section>
   );
 }

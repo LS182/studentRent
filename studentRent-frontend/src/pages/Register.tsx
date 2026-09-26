@@ -1,5 +1,6 @@
-import { useState } from 'react';
+import { useState, type FormEvent } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { apiUrl } from '../lib/api';
 
 export default function Register() {
   const [name, setName] = useState('');
@@ -7,166 +8,137 @@ export default function Register() {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [role, setRole] = useState<'student' | 'landlord'>('student');
-  
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
 
-  const handleRegister = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleRegister = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
     setError('');
 
     if (password !== confirmPassword) {
-      setError('Passwords do not match.');
+      setError('Your passwords do not match.');
       return;
     }
 
     if (password.length < 6) {
-      setError('Password must be at least 6 characters.');
+      setError('Your password must be at least 6 characters.');
       return;
     }
 
     setIsLoading(true);
-
     try {
-      const response = await fetch('https://studentrent.infinityfree.io/api/users/register.php', {
+      const response = await fetch(apiUrl('/api/users/register.php'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name, email, password, role }),
       });
-      
       const data = await response.json();
 
       if (response.ok) {
-        // Redirect to login on success
         navigate('/login');
       } else {
         setError(data.message || 'Registration failed.');
       }
-    } catch (err) {
-      setError('Server error. Please try again later.');
+    } catch {
+      setError('We could not reach StudentRent. Please try again shortly.');
     } finally {
       setIsLoading(false);
     }
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gray-50 px-4 py-12 dark:bg-charcoal">
-      <div className="w-full max-w-md rounded-std border border-gray-200 bg-white p-8 shadow-clean dark:border-gray-800 dark:bg-charcoal-card">
-        
-        <div className="mb-8 text-center">
-          <Link to="/" className="text-2xl font-bold tracking-tight text-charcoal-text dark:text-white">
-            Student<span className="text-forest-green dark:text-forest-green-light">Rent</span>
-          </Link>
-          <p className="mt-2 text-sm text-charcoal-muted">Create an account to get started.</p>
+    <section className="auth-page">
+      <div className="auth-visual register-visual">
+        <div className="auth-visual-content">
+          <div className="eyebrow"><span className="eyebrow-line" />Make yourself at home</div>
+          <h1>Your next chapter starts here.</h1>
+          <p>Create your StudentRent account to browse available spaces or share accommodation with students.</p>
+        </div>
+      </div>
+      <div className="auth-card">
+        <div className="auth-card-header">
+          <div className="eyebrow eyebrow-dark"><span className="eyebrow-line" />Get started</div>
+          <h2>Create your account</h2>
+          <p>It only takes a minute to join StudentRent.</p>
         </div>
 
-        {error && (
-          <div className="mb-4 rounded-std border border-red-200 bg-red-50 p-3 text-sm text-red-600 dark:border-red-900/50 dark:bg-red-950/30 dark:text-red-400">
-            {error}
-          </div>
-        )}
+        {error && <div className="form-error" role="alert">{error}</div>}
 
-        <form onSubmit={handleRegister} className="space-y-4">
-          <div>
-            <label className="mb-1 block text-sm font-medium text-charcoal-text dark:text-gray-200">
-              Full Name
-            </label>
+        <form onSubmit={handleRegister} className="form-stack">
+          <div className="form-field">
+            <label htmlFor="register-name">Full name</label>
             <input
+              id="register-name"
+              className="form-control"
               type="text"
+              autoComplete="name"
               required
               value={name}
-              onChange={(e) => setName(e.target.value)}
-              className="w-full rounded-std border border-gray-300 px-3 py-2 outline-none focus:border-icy-blue-dark focus:ring-1 focus:ring-icy-blue-dark dark:border-gray-700 dark:bg-charcoal dark:text-white"
+              onChange={(event) => setName(event.target.value)}
+              placeholder="Your full name"
             />
           </div>
-
-          <div>
-            <label className="mb-1 block text-sm font-medium text-charcoal-text dark:text-gray-200">
-              Email
-            </label>
+          <div className="form-field">
+            <label htmlFor="register-email">Email address</label>
             <input
+              id="register-email"
+              className="form-control"
               type="email"
+              autoComplete="email"
               required
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="w-full rounded-std border border-gray-300 px-3 py-2 outline-none focus:border-icy-blue-dark focus:ring-1 focus:ring-icy-blue-dark dark:border-gray-700 dark:bg-charcoal dark:text-white"
+              onChange={(event) => setEmail(event.target.value)}
+              placeholder="you@example.com"
             />
           </div>
-
-          {/* Role Selector */}
-          <div>
-            <label className="mb-1 block text-sm font-medium text-charcoal-text dark:text-gray-200">
-              I am a...
-            </label>
-            <div className="grid grid-cols-2 gap-3">
-              <button
-                type="button"
-                onClick={() => setRole('student')}
-                className={`rounded-std border py-2 text-sm font-medium transition-colors ${
-                  role === 'student'
-                    ? 'border-icy-blue-dark bg-icy-blue-dark/10 text-charcoal-text dark:text-white'
-                    : 'border-gray-200 text-charcoal-muted hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-charcoal'
-                }`}
-              >
+          <div className="form-field">
+            <label>I am joining as a</label>
+            <div className="role-choice-grid" role="group" aria-label="Account type">
+              <button type="button" className={role === 'student' ? 'role-choice selected' : 'role-choice'} onClick={() => setRole('student')}>
                 Student
               </button>
-              <button
-                type="button"
-                onClick={() => setRole('landlord')}
-                className={`rounded-std border py-2 text-sm font-medium transition-colors ${
-                  role === 'landlord'
-                    ? 'border-forest-green bg-forest-green/10 text-forest-green dark:text-forest-green-light'
-                    : 'border-gray-200 text-charcoal-muted hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-charcoal'
-                }`}
-              >
+              <button type="button" className={role === 'landlord' ? 'role-choice selected' : 'role-choice'} onClick={() => setRole('landlord')}>
                 Landlord
               </button>
             </div>
           </div>
-
-          <div>
-            <label className="mb-1 block text-sm font-medium text-charcoal-text dark:text-gray-200">
-              Password
-            </label>
-            <input
-              type="password"
-              required
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="w-full rounded-std border border-gray-300 px-3 py-2 outline-none focus:border-icy-blue-dark focus:ring-1 focus:ring-icy-blue-dark dark:border-gray-700 dark:bg-charcoal dark:text-white"
-            />
+          <div className="form-two-col">
+            <div className="form-field">
+              <label htmlFor="register-password">Password</label>
+              <input
+                id="register-password"
+                className="form-control"
+                type="password"
+                autoComplete="new-password"
+                minLength={6}
+                required
+                value={password}
+                onChange={(event) => setPassword(event.target.value)}
+                placeholder="At least 6 characters"
+              />
+            </div>
+            <div className="form-field">
+              <label htmlFor="register-confirm">Confirm password</label>
+              <input
+                id="register-confirm"
+                className="form-control"
+                type="password"
+                autoComplete="new-password"
+                required
+                value={confirmPassword}
+                onChange={(event) => setConfirmPassword(event.target.value)}
+                placeholder="Enter it again"
+              />
+            </div>
           </div>
-
-          <div>
-            <label className="mb-1 block text-sm font-medium text-charcoal-text dark:text-gray-200">
-              Confirm Password
-            </label>
-            <input
-              type="password"
-              required
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-              className="w-full rounded-std border border-gray-300 px-3 py-2 outline-none focus:border-icy-blue-dark focus:ring-1 focus:ring-icy-blue-dark dark:border-gray-700 dark:bg-charcoal dark:text-white"
-            />
-          </div>
-
-          <button
-            type="submit"
-            disabled={isLoading}
-            className="mt-2 w-full rounded-std bg-icy-blue-dark py-2.5 font-medium text-white transition-colors hover:bg-forest-green disabled:opacity-50"
-          >
-            {isLoading ? 'Creating account...' : 'Create Account'}
+          <button className="button button-primary button-block" type="submit" disabled={isLoading}>
+            {isLoading ? 'Creating account...' : 'Create account'}
           </button>
         </form>
 
-        <div className="mt-6 text-center text-sm text-charcoal-muted">
-          Already have an account?{' '}
-          <Link to="/login" className="font-medium text-forest-green hover:underline dark:text-forest-green-light">
-            Sign In
-          </Link>
-        </div>
+        <p className="auth-switch">Already have an account? <Link className="text-link" to="/login">Sign in</Link></p>
       </div>
-    </div>
+    </section>
   );
 }
